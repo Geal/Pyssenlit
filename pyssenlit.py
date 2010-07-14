@@ -145,8 +145,8 @@ class Pyssenlit(QObject):
 
     def newMethod(self):
         dialog = QtGui.QDialog()
-        ui2 = Ui_NewMethod()
-        ui2.setupUi(dialog)
+        methodDialog = Ui_NewMethod()
+        methodDialog.setupUi(dialog)
         dialog.show()
         if dialog.exec_():
             self.c.execute("select id from class where name=?",
@@ -154,10 +154,10 @@ class Pyssenlit(QObject):
             clid = self.c.fetchone()[0]
             self.c.execute("insert into method \
                 values(?,?,?,?,?,?)",
-                (clid,str(ui2.methodname.text()),
-                 str(ui2.methodcategory.text()),
-                 str(ui2.methodarguments.text()),
-                 str(ui2.methodcomments.document().toPlainText()),
+                (clid,str(methodDialog.methodname.text()),
+                 str(methodDialog.methodcategory.text()),
+                 str(methodDialog.methodarguments.text()),
+                 str(methodDialog.methodcomments.document().toPlainText()),
                  ''))
             self.conn.commit()
             self.UpdateMethods()
