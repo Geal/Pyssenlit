@@ -1,0 +1,31 @@
+14/07/10
+GUI prototype DONE
+displaying code with syntax highlighting DONE
+new class dialog DONE
+new method dialog DONE
+CTRL+S shortcut DONE
+====
+
+new package dialog
+method categories
+new project wizard -> creation of a new database
+import code from directory
+import code from directory as read only (for external libraries)
+export code to directory
+export code to directory with dependencies
+show comments for class
+code imports for class
+code imports for packages
+code completion
+code execution from database
+import hooks
+debugger
+tests execution
+versioning of class/method changes
+versioning of package/class/category/method creation
+use of branches in versioning
+commit hashes
+distributed versioning: database replications?
+web code browser, read-only version, and web IDE version
+
+BOOTSTRAP: use Pyssenlit to develop Pyssenlit!
