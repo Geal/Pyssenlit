@@ -121,7 +121,7 @@ class Pyssenlit(QObject):
         #print "saving code"
         #print ui.code.document().toPlainText()
         self.c.execute("update method set code=? where name=?",
-                  (str(self.ui.code.document().toPlainText()),
+                  (str(self.ui.code.text()),
                    str(self.ui.methods.selectedItems()[0].text())))
         self.conn.commit()
 
