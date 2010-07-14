@@ -2,10 +2,10 @@
 import sys
 from PyQt4 import QtGui
 from PyQt4.QtCore import *
-import syntax
 from gui import Ui_MainWindow
 from newclass import Ui_NewClass
 import sqlite3
+from PyQt4.Qsci import QsciLexerPython
 
 class Pyssenlit(QObject):
 
@@ -20,6 +20,9 @@ class Pyssenlit(QObject):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self.window)
 
+        self.ui.code.setLexer(QsciLexerPython())
+
+
         self.connect(self.ui.packages, SIGNAL("itemSelectionChanged()"),
                         self.UpdateClasses)
         self.ui.classes.itemClicked.connect(self.ShowImports)
@@ -29,12 +32,6 @@ class Pyssenlit(QObject):
                         self.UpdateCode)
         savekey = QtGui.QShortcut(Qt.CTRL + Qt.Key_S, self.ui.code, self.save)
         self.connect(self.ui.newclass, SIGNAL("clicked()"), self.newClass)
-        
-        highlight = syntax.Python(self.ui.code.document())
-
-        # Load syntax.py into the editor for demo purposes
-        infile = open('syntax.py', 'r')
-        self.ui.code.setPlainText(infile.read())
 
         #fill packages list
         self.c.execute('select * from package')
@@ -90,7 +87,7 @@ class Pyssenlit(QObject):
             signature = signature+'('+inherits+')'
         self.ui.methods.clearSelection()
         self.ui.code.clear()
-        self.ui.code.setPlainText(signature)
+        self.ui.code.setText(signature)
 
         self.currentclass = item
             
@@ -116,7 +113,7 @@ class Pyssenlit(QObject):
             self.c.execute("select code from method where name=?",
                   (str(self.ui.methods.selectedItems()[0].text()),))
             code=self.c.fetchone()[0]
-            self.ui.code.setPlainText(code)
+            self.ui.code.setText(code)
 
     def save(self):
         #print "saving code"

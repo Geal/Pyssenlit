@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>420</width>
+    <width>583</width>
     <height>369</height>
    </rect>
   </property>
@@ -20,9 +20,6 @@
     </item>
     <item row="1" column="2">
      <widget class="QListWidget" name="methods"/>
-    </item>
-    <item row="3" column="0" colspan="3">
-     <widget class="QPlainTextEdit" name="code"/>
     </item>
     <item row="1" column="0">
      <widget class="QTreeWidget" name="packages">
@@ -99,6 +96,16 @@
       </property>
      </widget>
     </item>
+    <item row="3" column="0" colspan="3">
+     <widget class="QsciScintilla" name="code">
+      <property name="toolTip">
+       <string/>
+      </property>
+      <property name="whatsThis">
+       <string/>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -106,13 +113,20 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>420</width>
+     <width>583</width>
      <height>21</height>
     </rect>
    </property>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QsciScintilla</class>
+   <extends>QFrame</extends>
+   <header>Qsci/qsciscintilla.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
