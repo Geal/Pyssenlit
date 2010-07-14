@@ -126,21 +126,19 @@ class Pyssenlit(QObject):
         self.conn.commit()
 
     def newClass(self):
-        print "new class"
-        item = QtGui.QListWidgetItem()
-        item.setText('new class')
-        self.dialog = QtGui.QDialog()
-        self.ui2 = Ui_NewClass()
-        self.ui2.setupUi(self.dialog)
-        self.dialog.show()         
-        if self.dialog.exec_():
-            print self.ui2.classname.text()
+        dialog = QtGui.QDialog()
+        classDialog = Ui_NewClass()
+        classDialog.setupUi(dialog)
+        dialog.show()
+        if dialog.exec_():
+            print classDialog.classname.text()
             self.c.execute("select max(id) from class")
             clid = self.c.fetchone()[0]
             self.c.execute("insert into class \
                 values(?,?,?,?,?)",
                 (clid+1, int(self.ui.packages.selectedItems()[0].text(1)),
-                 str(self.ui2.classname.text()), str(self.ui2.classinherits.text()),
+                 str(classDialog.classname.text()),
+                 str(classDialog.classinherits.text()),
                  ''))
             self.conn.commit()
             self.UpdateClasses()
