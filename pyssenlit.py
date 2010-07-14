@@ -4,6 +4,7 @@ from PyQt4 import QtGui
 from PyQt4.QtCore import *
 from gui import Ui_MainWindow
 from newclass import Ui_NewClass
+from newmethod import Ui_NewMethod
 import sqlite3
 from PyQt4.Qsci import QsciLexerPython
 
@@ -32,6 +33,7 @@ class Pyssenlit(QObject):
                         self.UpdateCode)
         savekey = QtGui.QShortcut(Qt.CTRL + Qt.Key_S, self.ui.code, self.save)
         self.connect(self.ui.newclass, SIGNAL("clicked()"), self.newClass)
+        self.connect(self.ui.newmethod, SIGNAL("clicked()"), self.newMethod)
 
         #fill packages list
         self.c.execute('select * from package')
@@ -142,6 +144,25 @@ class Pyssenlit(QObject):
                  ''))
             self.conn.commit()
             self.UpdateClasses()
+
+    def newMethod(self):
+        dialog = QtGui.QDialog()
+        ui2 = Ui_NewMethod()
+        ui2.setupUi(dialog)
+        dialog.show()
+        if dialog.exec_():
+            self.c.execute("select id from class where name=?",
+                           (str(self.ui.classes.selectedItems()[0].text()),))
+            clid = self.c.fetchone()[0]
+            self.c.execute("insert into method \
+                values(?,?,?,?,?,?)",
+                (clid,str(ui2.methodname.text()),
+                 str(ui2.methodcategory.text()),
+                 str(ui2.methodarguments.text()),
+                 str(ui2.methodcomments.document().toPlainText()),
+                 ''))
+            self.conn.commit()
+            self.UpdateMethods()
 
 
 if __name__ == '__main__':

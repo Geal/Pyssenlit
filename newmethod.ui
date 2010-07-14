@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Newmethod</class>
- <widget class="QDialog" name="Newmethod">
+ <class>NewMethod</class>
+ <widget class="QDialog" name="NewMethod">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -71,7 +71,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>Newmethod</receiver>
+   <receiver>NewMethod</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -87,7 +87,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>Newmethod</receiver>
+   <receiver>NewMethod</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
