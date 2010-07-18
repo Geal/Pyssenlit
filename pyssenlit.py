@@ -45,18 +45,7 @@ class Pyssenlit(QObject):
         self.connect(self.ui.newmethod, SIGNAL("clicked()"), self.newMethod)
 
         #fill packages list
-        self.c.execute('select * from package')
-        itemslist = []
-        for row in self.c:
-            #print row
-            item  = QtGui.QTreeWidgetItem()
-            item.setText(0,row[2])
-            item.setText(1,str(row[0]))
-            itemslist.append(item)
-            if row[1]==0:
-                self.ui.packages.addTopLevelItem(item)
-            else:
-                itemslist[row[1]-1].addChild(item)
+        self.UpdatePackage()
 
         self.window.show()
 
@@ -68,6 +57,24 @@ class Pyssenlit(QObject):
         QObject.__del__(self)
         self.c.close()
         self.conn.close()   
+
+    def UpdatePackage(self):
+        self.ui.packages.clear()
+        self.ui.classes.clear()
+        self.ui.methods.clear()
+        self.ui.code.clear()
+        #fill packages list
+        self.c.execute('select * from package')
+        itemslist = []
+        for row in self.c:
+            item  = QtGui.QTreeWidgetItem()
+            item.setText(0,row[2])
+            item.setText(1,str(row[0]))
+            itemslist.append(item)
+            if row[1]==0:
+                self.ui.packages.addTopLevelItem(item)
+            else:
+                itemslist[row[1]-1].addChild(item)
     
     def UpdateClasses(self):
         #print ui.packages.selectedItems()[0].text(0)
@@ -146,6 +153,7 @@ class Pyssenlit(QObject):
             self.c.execute("insert into package values(?,0,?)",
                            (pkid+1,str(packageDialog.packagename.text())))
             self.conn.commit()
+            self.UpdatePackage()
 
     def newClass(self):
         dialog = QtGui.QDialog()
