@@ -45,7 +45,7 @@ c.execute("insert into package \
     values(7, 0, 'pack de sept')")
 
 c.execute("insert into class \
-    values(1, 1, 'first class','','pouet,truc')")
+    values(1, 1, 'firstclass','','pouet,truc')")
 c.execute("insert into class \
     values(2, 1, 'economicclass','','')")
 c.execute("insert into class \
