@@ -2,7 +2,7 @@ __author__ = "Geoffroy Couprie"
 __copyright__ = "Copyright 2010, Geoffroy Couprie"
 __license__ = "GPL v2"
 __version__ = "0.0.1"
-__maintainer__ = "geoffroy Couprie"
+__maintainer__ = "Geoffroy Couprie"
 __email__ = "geo.couprie@gmail.com"
 __status__ = "Prototype"
 
