@@ -105,8 +105,27 @@ class Pyssenlit(QObject):
     def UpdateCode(self):
         self.ui.code.clear()
         if len(self.ui.methods.selectedItems()) > 0 :
+            print self.ui.methods.selectedItems()[0].text()
             code=self.m.getCodeFromMethod(self.ui.methods.selectedItems()[0].text())
-            self.ui.code.setText(code)
+            name,args,comments = self.m.getInfosFromMethod(self.ui.methods.selectedItems()[0].text())
+
+            method = ''
+            for line in comments.split('\n'):
+                method += '#'+line+'\n'
+            method += "def "+name+'('
+            arguments = args.split(',')
+            if len(arguments) > 0:
+                if len(arguments)==1:
+                    method += arguments[0]
+                else:
+                    for arg in arguments[0:-1]:
+                        method += arg+ ", "
+                    method += arguments[-1]
+            method += "):\n"
+
+            for line in code.split('\n'):
+                method += '\t' + code
+            self.ui.code.setText(method)
 
     def save(self):
         self.m.setCodeOfMethod(self.ui.methods.selectedItems()[0].text(),
@@ -180,6 +199,11 @@ class Model:
                   (str(classname),))
         name, inherits,imports = self.c.fetchone()
         return name, inherits, imports
+
+    def getInfosFromMethod(self, method):
+        self.c.execute("select name,args,comments from method where name=?",
+            (str(method),))
+        return self.c.fetchone()
 
     def getCodeFromMethod(self, method):
         self.c.execute("select code from method where name=?",
