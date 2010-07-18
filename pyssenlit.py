@@ -32,17 +32,14 @@ class Pyssenlit(QObject):
         self.ui.code.setLexer(QsciLexerPython())
 
 
-        self.connect(self.ui.packages, SIGNAL("itemSelectionChanged()"),
-                        self.UpdateClasses)
+        self.ui.packages.itemSelectionChanged.connect(self.UpdateClasses)
         self.ui.classes.itemClicked.connect(self.ShowImports)
-        self.connect(self.ui.classes, SIGNAL("itemSelectionChanged()"),
-                        self.UpdateMethods)
-        self.connect(self.ui.methods, SIGNAL("itemSelectionChanged()"),
-                        self.UpdateCode)
+        self.ui.classes.itemSelectionChanged.connect(self.UpdateMethods)
+        self.ui.methods.itemSelectionChanged.connect(self.UpdateCode)
         savekey = QtGui.QShortcut(Qt.CTRL + Qt.Key_S, self.ui.code, self.save)
         self.ui.newpackage.clicked.connect(self.newPackage)
-        self.connect(self.ui.newclass, SIGNAL("clicked()"), self.newClass)
-        self.connect(self.ui.newmethod, SIGNAL("clicked()"), self.newMethod)
+        self.ui.newclass.clicked.connect(self.newClass)
+        self.ui.newmethod.clicked.connect(self.newMethod)
 
         #fill packages list
         self.UpdatePackage()
