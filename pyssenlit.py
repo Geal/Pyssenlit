@@ -12,6 +12,7 @@ from PyQt4.QtCore import *
 from gui import Ui_MainWindow
 from newclass import Ui_NewClass
 from newmethod import Ui_NewMethod
+from newpackage import Ui_NewPackage
 import sqlite3
 from PyQt4.Qsci import QsciLexerPython
 
@@ -39,6 +40,7 @@ class Pyssenlit(QObject):
         self.connect(self.ui.methods, SIGNAL("itemSelectionChanged()"),
                         self.UpdateCode)
         savekey = QtGui.QShortcut(Qt.CTRL + Qt.Key_S, self.ui.code, self.save)
+        self.ui.newpackage.clicked.connect(self.newPackage)
         self.connect(self.ui.newclass, SIGNAL("clicked()"), self.newClass)
         self.connect(self.ui.newmethod, SIGNAL("clicked()"), self.newMethod)
 
@@ -131,6 +133,19 @@ class Pyssenlit(QObject):
                   (str(self.ui.code.text()),
                    str(self.ui.methods.selectedItems()[0].text())))
         self.conn.commit()
+
+    def newPackage(self):
+        dialog = QtGui.QDialog()
+        packageDialog = Ui_NewPackage()
+        packageDialog.setupUi(dialog)
+        dialog.show()
+        if dialog.exec_():
+            print packageDialog.packagename.text()
+            self.c.execute("select max(id) from package")
+            pkid = self.c.fetchone()[0]
+            self.c.execute("insert into package values(?,0,?)",
+                           (pkid+1,str(packageDialog.packagename.text())))
+            self.conn.commit()
 
     def newClass(self):
         dialog = QtGui.QDialog()
