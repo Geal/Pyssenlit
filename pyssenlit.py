@@ -71,34 +71,24 @@ class Pyssenlit(QObject):
                 itemslist[row[1]-1].addChild(item)
     
     def UpdateClasses(self):
-        print self.ui.packages.selectedItems()[0].text(0)
         self.ui.classes.clear()
         self.ui.methods.clear()
         self.ui.code.clear()
         self.currentpackage = self.ui.packages.selectedItems()[0]
         res = self.m.getClassesFromPackage(self.currentpackage.text(0))
         for row in res:
-            #print row
             item = QtGui.QListWidgetItem()
             item.setText(row[2])
             self.ui.classes.addItem(item)
 
     def ShowImports(self,item):
-        print 'showimports'+str(item.text())
-        #if len(ui.methods.selectedItems())==0 or \
-        #(hasattr(self, 'currentclass') and self.currentclass==item):
-            #print "show imports"
-            #print self.currentclass
         name, inherits,imports = self.m.getInfosFromClass(item.text())
-
-        print name+' '+inherits+' '+imports
         signature = 'class '+name
         if inherits!='':
             signature = signature+'('+inherits+')'
         self.ui.methods.clearSelection()
         self.ui.code.clear()
         self.ui.code.setText(signature)
-
         self.currentclass = item
 
     def UpdateMethods(self):
@@ -113,15 +103,12 @@ class Pyssenlit(QObject):
                 self.ui.methods.addItem(item)
 
     def UpdateCode(self):
-        #print ui.methods.selectedItems()[0].text()
         self.ui.code.clear()
         if len(self.ui.methods.selectedItems()) > 0 :
             code=self.m.getCodeFromMethod(self.ui.methods.selectedItems()[0].text())
             self.ui.code.setText(code)
 
     def save(self):
-        #print "saving code"
-        #print ui.code.document().toPlainText()
         self.m.setCodeOfMethod(self.ui.methods.selectedItems()[0].text(),
                                self.ui.code.text())
 
@@ -131,7 +118,6 @@ class Pyssenlit(QObject):
         packageDialog.setupUi(dialog)
         dialog.show()
         if dialog.exec_():
-            print packageDialog.packagename.text()
             self.m.newPackage(packageDialog.packagename.text())
             self.UpdatePackage()
 
@@ -141,7 +127,6 @@ class Pyssenlit(QObject):
         classDialog.setupUi(dialog)
         dialog.show()
         if dialog.exec_():
-            print classDialog.classname.text()
             self.m.newClass(self.ui.packages.selectedItems()[0].text(0),
                             classDialog.classname.text(),
                             classDialog.classinherits.text(), '')
