@@ -21,8 +21,7 @@ class Pyssenlit(QObject):
     def __init__(self):
         QObject.__init__(self)
 
-        self.conn = sqlite3.connect('example.db')
-        self.c = self.conn.cursor()
+        self.m = Model('example.db')
 
         self.app = QtGui.QApplication(sys.argv)
         self.window = QtGui.QMainWindow()
@@ -52,18 +51,16 @@ class Pyssenlit(QObject):
     def __del__(self):
         print 'application closing'
         QObject.__del__(self)
-        self.c.close()
-        self.conn.close()   
+        del self.m
 
     def UpdatePackage(self):
         self.ui.packages.clear()
         self.ui.classes.clear()
         self.ui.methods.clear()
         self.ui.code.clear()
-        #fill packages list
-        self.c.execute('select * from package')
+        res = self.m.getAllPackages()
         itemslist = []
-        for row in self.c:
+        for row in res:
             item  = QtGui.QTreeWidgetItem()
             item.setText(0,row[2])
             item.setText(1,str(row[0]))
@@ -74,28 +71,26 @@ class Pyssenlit(QObject):
                 itemslist[row[1]-1].addChild(item)
     
     def UpdateClasses(self):
-        #print ui.packages.selectedItems()[0].text(0)
+        print self.ui.packages.selectedItems()[0].text(0)
         self.ui.classes.clear()
         self.ui.methods.clear()
         self.ui.code.clear()
         self.currentpackage = self.ui.packages.selectedItems()[0]
-        self.c.execute('select * from class where pk_id=?',
-                  (int(self.ui.packages.selectedItems()[0].text(1)),))
-        for row in self.c:
+        res = self.m.getClassesFromPackage(self.currentpackage.text(0))
+        for row in res:
             #print row
             item = QtGui.QListWidgetItem()
             item.setText(row[2])
             self.ui.classes.addItem(item)
 
     def ShowImports(self,item):
-        print 'showiports'+str(item.text())
+        print 'showimports'+str(item.text())
         #if len(ui.methods.selectedItems())==0 or \
         #(hasattr(self, 'currentclass') and self.currentclass==item):
             #print "show imports"
             #print self.currentclass
-        self.c.execute('select name, inherits, imports from class where name=?',
-                  (str(item.text()),))
-        name, inherits,imports = self.c.fetchone()
+        name, inherits,imports = self.m.getInfosFromClass(item.text())
+
         print name+' '+inherits+' '+imports
         signature = 'class '+name
         if inherits!='':
@@ -105,18 +100,14 @@ class Pyssenlit(QObject):
         self.ui.code.setText(signature)
 
         self.currentclass = item
-            
+
     def UpdateMethods(self):
         self.ui.code.clear()
         self.ui.methods.clear()
         
         if len(self.ui.classes.selectedItems()) > 0:
-            self.c.execute("select id from class where name=?",
-                      (str(self.ui.classes.selectedItems()[0].text()),))
-            clid=self.c.fetchone()[0]
-            self.c.execute('select * from method where cl_id=?',
-                      (clid,))
-            for row in self.c:
+            res = self.m.getMethodsFromClass(self.ui.classes.selectedItems()[0].text())
+            for row in res:
                 item = QtGui.QListWidgetItem()
                 item.setText(row[1])
                 self.ui.methods.addItem(item)
@@ -125,18 +116,14 @@ class Pyssenlit(QObject):
         #print ui.methods.selectedItems()[0].text()
         self.ui.code.clear()
         if len(self.ui.methods.selectedItems()) > 0 :
-            self.c.execute("select code from method where name=?",
-                  (str(self.ui.methods.selectedItems()[0].text()),))
-            code=self.c.fetchone()[0]
+            code=self.m.getCodeFromMethod(self.ui.methods.selectedItems()[0].text())
             self.ui.code.setText(code)
 
     def save(self):
         #print "saving code"
         #print ui.code.document().toPlainText()
-        self.c.execute("update method set code=? where name=?",
-                  (str(self.ui.code.text()),
-                   str(self.ui.methods.selectedItems()[0].text())))
-        self.conn.commit()
+        self.m.setCodeOfMethod(self.ui.methods.selectedItems()[0].text(),
+                               self.ui.code.text())
 
     def newPackage(self):
         dialog = QtGui.QDialog()
@@ -145,11 +132,7 @@ class Pyssenlit(QObject):
         dialog.show()
         if dialog.exec_():
             print packageDialog.packagename.text()
-            self.c.execute("select max(id) from package")
-            pkid = self.c.fetchone()[0]
-            self.c.execute("insert into package values(?,0,?)",
-                           (pkid+1,str(packageDialog.packagename.text())))
-            self.conn.commit()
+            self.m.newPackage(packageDialog.packagename.text())
             self.UpdatePackage()
 
     def newClass(self):
@@ -159,15 +142,9 @@ class Pyssenlit(QObject):
         dialog.show()
         if dialog.exec_():
             print classDialog.classname.text()
-            self.c.execute("select max(id) from class")
-            clid = self.c.fetchone()[0]
-            self.c.execute("insert into class \
-                values(?,?,?,?,?)",
-                (clid+1, int(self.ui.packages.selectedItems()[0].text(1)),
-                 str(classDialog.classname.text()),
-                 str(classDialog.classinherits.text()),
-                 ''))
-            self.conn.commit()
+            self.m.newClass(self.ui.packages.selectedItems()[0].text(0),
+                            classDialog.classname.text(),
+                            classDialog.classinherits.text(), '')
             self.UpdateClasses()
 
     def newMethod(self):
@@ -176,19 +153,90 @@ class Pyssenlit(QObject):
         methodDialog.setupUi(dialog)
         dialog.show()
         if dialog.exec_():
-            self.c.execute("select id from class where name=?",
-                           (str(self.ui.classes.selectedItems()[0].text()),))
-            clid = self.c.fetchone()[0]
-            self.c.execute("insert into method \
-                values(?,?,?,?,?,?)",
-                (clid,str(methodDialog.methodname.text()),
-                 str(methodDialog.methodcategory.text()),
-                 str(methodDialog.methodarguments.text()),
-                 str(methodDialog.methodcomments.document().toPlainText()),
-                 ''))
-            self.conn.commit()
+            self.m.newMethod(self.ui.classes.selectedItems()[0].text(),
+                             methodDialog.methodname.text(),
+                             methodDialog.methodcategory.text(),
+                             methodDialog.methodarguments.text(),
+                             methodDialog.methodcomments.document().toPlainText()
+                             )
             self.UpdateMethods()
 
+class Model:
+    def __init__(self, database):
+        self.conn = sqlite3.connect(database)
+        self.c = self.conn.cursor()
+
+    def getAllPackages(self):
+        self.c.execute('select * from package')
+        itemslist = []
+        for row in self.c:
+            itemslist.append(row)
+        return itemslist
+
+    def getClassesFromPackage(self, pkname):
+        self.c.execute("select * from class where pk_id=(select id from \
+                       package where name=?)",(str(pkname),))
+        itemslist = []
+        for row in self.c:
+            itemslist.append(row)
+        return itemslist
+
+    def getMethodsFromClass(self, classname):
+        self.c.execute("select * from method where cl_id=( \
+                        select id from class where name=?)",
+                       (str(classname),))
+        itemslist = []
+        for row in self.c:
+            itemslist.append(row)
+        return itemslist
+
+    def getInfosFromClass(self, classname):
+        self.c.execute('select name, inherits, imports from class where name=?',
+                  (str(classname),))
+        name, inherits,imports = self.c.fetchone()
+        return name, inherits, imports
+
+    def getCodeFromMethod(self, method):
+        self.c.execute("select code from method where name=?",
+            (str(method),))
+        return self.c.fetchone()[0]
+
+    def setCodeOfMethod(self, method, code):
+        self.c.execute("update method set code=? where name=?",
+            (str(code),
+           str(method)))
+        self.conn.commit()
+
+    def newPackage(self, name, parent=0):
+        #TODO: throw error if existent package
+        self.c.execute("select max(id) from package")
+        pkid = self.c.fetchone()[0]
+        self.c.execute("insert into package values(?,?,?)",
+                       (pkid+1, int(parent), str(name)))
+        self.conn.commit()
+
+    def newClass(self, package, name, inherits, imports=''):
+        #TODO: throw error of existent class
+        self.c.execute("select max(id) from class")
+        clid = self.c.fetchone()[0]
+        self.c.execute("insert into class \
+            values(?,(select id from package where name=?),?,?,?)",
+            (clid+1, str(package), str(name), str(inherits), ''))
+        self.conn.commit()
+
+    def newMethod(self, classname, method, category, args, comments, code=''):
+        self.c.execute("select id from class where name=?",
+                       (str(classname),))
+        clid = self.c.fetchone()[0]
+        self.c.execute("insert into method values(?,?,?,?,?,?)",
+            (clid,str(method), str(category), str(args),
+             str(comments), str(code)))
+        self.conn.commit()
+
+    def __del__(self):
+        print "model closing"
+        self.c.close()
+        self.conn.close()
 
 if __name__ == '__main__':
     p = Pyssenlit()
